@@ -1,49 +1,49 @@
 /*
  * spa.shell.js
  * Shell module for SPA
-*/
+ */
 
 /*jslint         browser : true, continue : true,
-  devel  : true, indent  : 2,    maxerr   : 50,
-  newcap : true, nomen   : true, plusplus : true,
-  regexp : true, sloppy  : true, vars     : false,
-  white  : true
-*/
+ devel  : true, indent  : 2,    maxerr   : 50,
+ newcap : true, nomen   : true, plusplus : true,
+ regexp : true, sloppy  : true, vars     : false,
+ white  : true
+ */
 /*global $, spa */
 
 spa.shell = (function () {
   //---------------- BEGIN MODULE SCOPE VARIABLES --------------
   var
     configMap = {
-      anchor_schema_map : {
-        chat  : { opened : true, closed : true }
+      anchor_schema_map: {
+        chat: { opened: true, closed: true }
       },
-      main_html : String()
-        + '<div class="spa-shell-head">'
-          + '<div class="spa-shell-head-logo"></div>'
-          + '<div class="spa-shell-head-acct"></div>'
-          + '<div class="spa-shell-head-search"></div>'
-        + '</div>'
-        + '<div class="spa-shell-main">'
-          + '<div class="spa-shell-main-nav"></div>'
-          + '<div class="spa-shell-main-content"></div>'
-        + '</div>'
-        + '<div class="spa-shell-foot"></div>'
-        + '<div class="spa-shell-modal"></div>'
+      main_html: String()
+      + '<div class="spa-shell-head">'
+      + '<div class="spa-shell-head-logo"></div>'
+      + '<div class="spa-shell-head-acct"></div>'
+      + '<div class="spa-shell-head-search"></div>'
+      + '</div>'
+      + '<div class="spa-shell-main">'
+      + '<div class="spa-shell-main-nav"></div>'
+      + '<div class="spa-shell-main-content"></div>'
+      + '</div>'
+      + '<div class="spa-shell-foot"></div>'
+      + '<div class="spa-shell-modal"></div>'
     },
 
-    stateMap  = { anchor_map : {} },
+    stateMap = { anchor_map: {} },
     jqueryMap = {},
 
-    copyAnchorMap,    setJqueryMap,
+    copyAnchorMap, setJqueryMap,
     changeAnchorPart, onHashchange,
-    setChatAnchor,    initModule;
+    setChatAnchor, initModule;
   //----------------- END MODULE SCOPE VARIABLES ---------------
 
   //------------------- BEGIN UTILITY METHODS ------------------
   // Returns copy of stored anchor map; minimizes overhead
   copyAnchorMap = function () {
-    return $.extend( true, {}, stateMap.anchor_map );
+    return $.extend(true, {}, stateMap.anchor_map);
   };
   //-------------------- END UTILITY METHODS -------------------
 
@@ -51,7 +51,7 @@ spa.shell = (function () {
   // Begin DOM method /setJqueryMap/
   setJqueryMap = function () {
     var $container = stateMap.$container;
-    jqueryMap = { $container : $container };
+    jqueryMap = { $container: $container };
   };
   // End DOM method /setJqueryMap/
 
@@ -74,43 +74,46 @@ spa.shell = (function () {
   //     * Attempts to change the URI using uriAnchor.
   //     * Returns true on success, and false on failure.
   //
-  changeAnchorPart = function ( arg_map ) {
+  changeAnchorPart = function (arg_map) {
     var
       anchor_map_revise = copyAnchorMap(),
-      bool_return       = true,
+      bool_return = true,
       key_name, key_name_dep;
 
     // Begin merge changes into anchor map
     KEYVAL:
-    for ( key_name in arg_map ) {
-      if ( arg_map.hasOwnProperty( key_name ) ) {
+      for (key_name in arg_map) {
+        if (arg_map.hasOwnProperty(key_name)) {
 
-        // skip dependent keys during iteration
-        if ( key_name.indexOf( '_' ) === 0 ) { continue KEYVAL; }
+          // skip dependent keys during iteration
+          if (key_name.indexOf('_') === 0) {
+            continue KEYVAL;
+          }
 
-        // update independent key value
-        anchor_map_revise[key_name] = arg_map[key_name];
+          // update independent key value
+          anchor_map_revise[key_name] = arg_map[key_name];
 
-        // update matching dependent key
-        key_name_dep = '_' + key_name;
-        if ( arg_map[key_name_dep] ) {
-          anchor_map_revise[key_name_dep] = arg_map[key_name_dep];
-        }
-        else {
-          delete anchor_map_revise[key_name_dep];
-          delete anchor_map_revise['_s' + key_name_dep];
+          // update matching dependent key
+          key_name_dep = '_' + key_name;
+
+          if (arg_map[key_name_dep]) {
+            anchor_map_revise[key_name_dep] = arg_map[key_name_dep];
+          }
+          else {
+            delete anchor_map_revise[key_name_dep];
+            delete anchor_map_revise['_s' + key_name_dep];
+          }
         }
       }
-    }
     // End merge changes into anchor map
 
     // Begin attempt to update URI; revert if not successful
     try {
-      $.uriAnchor.setAnchor( anchor_map_revise );
+      $.uriAnchor.setAnchor(anchor_map_revise);
     }
-    catch ( error ) {
+    catch (error) {
       // replace URI with existing state
-      $.uriAnchor.setAnchor( stateMap.anchor_map,null,true );
+      $.uriAnchor.setAnchor(stateMap.anchor_map, null, true);
       bool_return = false;
     }
     // End attempt to update URI...
@@ -133,7 +136,7 @@ spa.shell = (function () {
   //   * Adjust the application only where proposed state
   //     differs from existing and is allowed by anchor schema
   //
-  onHashchange = function ( event ) {
+  onHashchange = function (event) {
     var
       _s_chat_previous, _s_chat_proposed, s_chat_proposed,
       anchor_map_proposed,
@@ -141,9 +144,11 @@ spa.shell = (function () {
       anchor_map_previous = copyAnchorMap();
 
     // attempt to parse anchor
-    try { anchor_map_proposed = $.uriAnchor.makeAnchorMap(); }
-    catch ( error ) {
-      $.uriAnchor.setAnchor( anchor_map_previous, null, true );
+    try {
+      anchor_map_proposed = $.uriAnchor.makeAnchorMap();
+    }
+    catch (error) {
+      $.uriAnchor.setAnchor(anchor_map_previous, null, true);
       return false;
     }
     stateMap.anchor_map = anchor_map_proposed;
@@ -153,34 +158,33 @@ spa.shell = (function () {
     _s_chat_proposed = anchor_map_proposed._s_chat;
 
     // Begin adjust chat component if changed
-    if ( ! anchor_map_previous
-     || _s_chat_previous !== _s_chat_proposed
-    ) {
+    if (!anchor_map_previous || _s_chat_previous !== _s_chat_proposed) {
       s_chat_proposed = anchor_map_proposed.chat;
-      switch ( s_chat_proposed ) {
+
+      switch (s_chat_proposed) {
         case 'opened' :
-          is_ok = spa.chat.setSliderPosition( 'opened' );
-        break;
+          is_ok = spa.chat.setSliderPosition('opened');
+          break;
         case 'closed' :
-          is_ok = spa.chat.setSliderPosition( 'closed' );
-        break;
+          is_ok = spa.chat.setSliderPosition('closed');
+          break;
         default :
-          spa.chat.setSliderPosition( 'closed' );
+          spa.chat.setSliderPosition('closed');
           delete anchor_map_proposed.chat;
-          $.uriAnchor.setAnchor( anchor_map_proposed, null, true );
+          $.uriAnchor.setAnchor(anchor_map_proposed, null, true);
       }
     }
     // End adjust chat component if changed
 
     // Begin revert anchor if slider change denied
-    if ( ! is_ok ){
-      if ( anchor_map_previous ){
-        $.uriAnchor.setAnchor( anchor_map_previous, null, true );
+    if (!is_ok) {
+      if (anchor_map_previous) {
+        $.uriAnchor.setAnchor(anchor_map_previous, null, true);
         stateMap.anchor_map = anchor_map_previous;
       }
       else {
         delete anchor_map_proposed.chat;
-        $.uriAnchor.setAnchor( anchor_map_proposed, null, true );
+        $.uriAnchor.setAnchor(anchor_map_proposed, null, true);
       }
     }
     // End revert anchor if slider change denied
@@ -204,8 +208,8 @@ spa.shell = (function () {
   //   * false - requested anchor part was not updated
   // Throws   : none
   //
-  setChatAnchor = function ( position_type ){
-    return changeAnchorPart({ chat : position_type });
+  setChatAnchor = function (position_type) {
+    return changeAnchorPart({ chat: position_type });
   };
   // End callback method /setChatAnchor/
   //----------------------- END CALLBACKS ----------------------
@@ -227,24 +231,25 @@ spa.shell = (function () {
   // Returns   : none 
   // Throws    : none
   //
-  initModule = function ( $container ) {
+  initModule = function ($container) {
     // load HTML and map jQuery collections
     stateMap.$container = $container;
-    $container.html( configMap.main_html );
+    $container.html(configMap.main_html);
     setJqueryMap();
 
     // configure uriAnchor to use our schema
     $.uriAnchor.configModule({
-      schema_map : configMap.anchor_schema_map
+      schema_map: configMap.anchor_schema_map
     });
 
     // configure and initialize feature modules
     spa.chat.configModule({
-      set_chat_anchor : setChatAnchor,
-      chat_model      : spa.model.chat,
-      people_model    : spa.model.people
+      set_chat_anchor: setChatAnchor,
+      chat_model: spa.model.chat,
+      people_model: spa.model.people
     });
-    spa.chat.initModule( jqueryMap.$container );
+
+    spa.chat.initModule(jqueryMap.$container);
 
     // Handle URI anchor change events.
     // This is done /after/ all feature modules are configured
@@ -253,12 +258,12 @@ spa.shell = (function () {
     // is considered on-load
     //
     $(window)
-      .bind( 'hashchange', onHashchange )
-      .trigger( 'hashchange' );
+      .bind('hashchange', onHashchange)
+      .trigger('hashchange');
 
   };
   // End PUBLIC method /initModule/
 
-  return { initModule : initModule };
+  return { initModule: initModule };
   //------------------- END PUBLIC METHODS ---------------------
 }());
